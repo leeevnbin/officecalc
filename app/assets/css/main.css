@@ -3,7 +3,7 @@
 
 @theme static {
   --font-sans: "Public Sans", sans-serif;
-
+  
   --color-green-50: #effdf5;
   --color-green-100: #d9fbe8;
   --color-green-200: #b3f5d1;
@@ -26,10 +26,19 @@
 #calc {
   @apply grow;
   @apply p-5;
+  @apply bg-[url(/default.jpg)] bg-center;
 }
 
-.flex-g-5 {
-  @apply flex gap-5;
+.page_layout {
+  @apply flex flex-col gap-4;
+}
+
+.page_title {
+  @apply font-semibold text-xl;
+}
+
+.flex-default {
+  @apply flex gap-4 items-center;
 }
 
 .absol-center {
