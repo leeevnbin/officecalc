@@ -1,0 +1,160 @@
+<script setup lang="ts">
+import type { TableColumn } from "@nuxt/ui";
+import { getPaginationRowModel, type Row } from "@tanstack/vue-table";
+import { useOvertimesDataStore } from "~/stores/overtimesDataStore";
+import { useUserDataStore } from "~/stores/userDataStore";
+import { commaFormat } from "~/utils/formattingFns";
+
+const userDataStore = useUserDataStore();
+
+interface OvertimesData {
+  date: string;
+  hours: number;
+  minutes: number;
+}
+
+const { loading } = useFirebaseUser();
+
+const { user } = useFirebaseUser();
+const userID = user.value?.email || "";
+
+const route = useRoute();
+
+const lastMonth = new Date().getMonth().toString().padStart(2, "0");
+const thisMonth = (new Date().getMonth() + 1).toString().padStart(2, "0");
+const nextMonth = (new Date().getMonth() + 2).toString().padStart(2, "0");
+
+const period = (route.query.period as string) || "this";
+
+let selectedMonth = thisMonth;
+if (period === "last") selectedMonth = lastMonth;
+else if (period === "next") selectedMonth = nextMonth;
+
+const overtimesDataStore = useOvertimesDataStore();
+
+const overtimesTable = useTemplateRef("overtimesTable");
+
+const columns: TableColumn<OvertimesData>[] = [
+  { header: "날짜", accessorKey: "date" },
+  {
+    header: "시간",
+    cell: ({ row }: { row: Row<OvertimesData> }) => {
+      const hours = row.original.hours ?? 0;
+      const minutes = row.original.minutes ?? 0;
+
+      return `${hours}시간 ${minutes}분`;
+    },
+  },
+  {
+    header: "수당",
+    cell: ({ row }: { row: Row<OvertimesData> }) => {
+      const hours = row.original.hours ? row.original.hours * 60 : 0;
+      const minutes = row.original.minutes ?? 0;
+      const times = hours + minutes;
+      const salary = userDataStore.userInfo ? userDataStore.userInfo.salary : 0;
+      const allowance = commaFormat(
+        Math.round((salary / (209 * 12)) * 1.5 * (times / 60))
+      );
+
+      return `${allowance}원`;
+    },
+  },
+];
+
+const pagination = ref({
+  pageIndex: 0,
+  pageSize: 10,
+});
+
+const totalAllowance = (selectedMonth: string) => {
+  const salary = userDataStore.userInfo ? userDataStore.userInfo.salary : 0;
+  const totalTimes = overtimesDataStore.totalTimes(selectedMonth);
+  const total = Math.round((salary / (209 * 12)) * 1.5 * (totalTimes / 60));
+
+  return commaFormat(total);
+};
+
+const overtimes = computed(
+  () => overtimesDataStore.overtimesByMonth[selectedMonth] ?? []
+);
+
+onMounted(async () => {
+  try {
+    await overtimesDataStore.fetchOvertimesData(userID, selectedMonth);
+    await userDataStore.fetchUserData(userID);
+  } catch (error) {
+    console.error("Error fetching foodcost data:", error);
+  }
+});
+</script>
+
+<template>
+  <div v-if="loading">
+    <div>
+      <img src="/loading.gif" width="240" height="240" class="absol-center">
+    </div>
+  </div>
+
+  <div v-else>
+    <ClientOnly>
+      <div class="page_layout">
+        <div class="flex justify-between">
+          <h1 class="page_title">야근 관리</h1>
+          <div class="flex-default">
+            <UButton label="등록하기" to="/overtimes/add" class="w-fit" />
+            <UButton
+              type="button"
+              color="neutral"
+              icon="i-lucide-house"
+              to="/"
+            />
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div>
+            <p>이번 달 야근 시간은?</p>
+            <p class="text-orange-500 font-medium">
+              {{ overtimesDataStore.formattingOvertimes(selectedMonth) }}
+            </p>
+          </div>
+          <div>
+            <p>이번 달 야근비는?</p>
+            <p class="text-orange-500 font-medium">
+              {{ totalAllowance(selectedMonth) }}원
+            </p>
+          </div>
+        </div>
+        <div v-if="overtimes.length > 0" class="w-full space-y-4 pb-4">
+          <UTable
+            ref="overtimesTable"
+            v-model:pagination="pagination"
+            sticky
+            :data="overtimes"
+            :columns="columns"
+            :pagination-options="{
+              getPaginationRowModel: getPaginationRowModel(),
+            }"
+            class="flex-1"
+          />
+          <div class="flex justify-center border-t border-default pt-4">
+            <UPagination
+              :default-page="
+                (overtimesTable?.tableApi?.getState().pagination.pageIndex ||
+                  0) + 1
+              "
+              :items-per-page="
+                overtimesTable?.tableApi?.getState().pagination.pageSize
+              "
+              :total="
+                overtimesTable?.tableApi?.getFilteredRowModel().rows.length
+              "
+              @update:page="
+                (p) => overtimesTable?.tableApi?.setPageIndex(p - 1)
+              "
+            />
+          </div>
+        </div>
+      </div>
+    </ClientOnly>
+  </div>
+</template>
