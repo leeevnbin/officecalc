@@ -1,7 +1,10 @@
 <template>
   <UApp>
     <div id="calc">
-      <NuxtPage />
+      <div class="grow">
+        <NuxtPage />
+      </div>
+      <AppFooter />
     </div>
   </UApp>
 </template>
