@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { CalendarDate } from "@internationalized/date";
-import { addDoc, collection } from "firebase/firestore";
-import { ref } from "vue";
+import { query, where, getDocs, addDoc, collection } from "firebase/firestore";
 
 const { loading } = useFirebaseUser();
 
@@ -19,14 +17,6 @@ const maxLength = 15;
 
 const toast = useToast();
 
-const dateRange = ref(
-  new CalendarDate(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    new Date().getDate()
-  )
-);
-
 const addAnnualData = async () => {
   try {
     const db = useNuxtApp().$firestoreDb;
@@ -34,23 +24,39 @@ const addAnnualData = async () => {
       throw new Error("Firestore 인스턴스가 없습니다.");
     }
     const annualCollection = collection(db, "annual");
+    const annualQuery = query(
+      annualCollection,
+      where("date", "==", annualData.date),
+      where("user", "==", annualData.user)
+    );
+
+    const querySnapshot = await getDocs(annualQuery);
+
+    if (!querySnapshot.empty) {
+      toast.add({
+        title: "중복 오류",
+        description: "이미 등록된 연차 데이터가 있습니다.",
+        color: "error",
+        duration: 2000,
+      });
+      return;
+    }
+
     await addDoc(annualCollection, {
       user: annualData.user,
       deduction: annualData.deduction,
-      date: `${dateRange.value.year}-${dateRange.value.month
-        .toString()
-        .padStart(2, "0")}-${dateRange.value.day.toString().padStart(2, "0")}`,
+      date: annualData.date,
       memo: annualData.memo,
     });
     toast.add({
       title: "연차 사용",
       description: "연차를 사용하였습니다.",
       color: "success",
-      duration: 2000,
+      duration: 1000,
     });
     setTimeout(() => {
       navigateTo("/annual");
-    }, 2000);
+    }, 1000);
   } catch (error) {
     console.error("Firestore 오류:", error);
     toast.add({
@@ -87,7 +93,7 @@ const addAnnualData = async () => {
           @submit.prevent="addAnnualData"
         >
           <UFormField label="연차 날짜" name="date">
-            <UCalendar v-model="dateRange" />
+            <UInput v-model="annualData.date" type="date" variant="subtle" />
           </UFormField>
           <UFormField label="메모">
             <div class="flex items-center gap-1">
@@ -95,6 +101,7 @@ const addAnnualData = async () => {
                 v-model="annualData.memo"
                 :maxlength="maxLength"
                 class="grow"
+                variant="subtle"
               />
               {{ annualData.memo?.length }}/{{ maxLength }}
             </div>

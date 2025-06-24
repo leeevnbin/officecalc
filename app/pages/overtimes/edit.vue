@@ -1,62 +1,53 @@
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui";
-import { query, where, getDocs, addDoc, collection } from "firebase/firestore";
-import { useFirebaseUser } from "~/composables/useFirebaseUser";
+import { doc, updateDoc } from "firebase/firestore";
+import { useOvertimesDataStore } from "~/stores/overtimesDataStore";
 
 const { loading } = useFirebaseUser();
 
 const { user } = useFirebaseUser();
 const userID = user.value?.email || "";
 
-const overtimeData = reactive({
+const overtimesDataStore = useOvertimesDataStore();
+
+const route = useRoute();
+const dataID = route.query.id as string;
+let dateQuery = route.query.date as string;
+if (dateQuery) {
+  dateQuery = dateQuery.replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3");
+}
+
+const specificOvertime = reactive({
   user: userID,
   date: "",
-  hours: null,
-  minutes: null,
-  year: null,
-  month: null,
+  hours: "",
+  minutes: "",
+  year: "",
+  month: "",
   memo: "",
 });
 
 const maxLength = 15;
 
-const router = useRouter();
 const toast = useToast();
+const router = useRouter();
 
-const validate = (overtimeData: any): FormError[] => {
-  const errors = [];
-  if (!overtimeData.date)
-    errors.push({ name: "date", message: "날짜를 입력해주세요" });
-  return errors;
-};
+const fetchUpdateOvertimeData = async () => {
+  if (!dataID) {
+    console.error("유효한 dataID가 없습니다.");
+    return;
+  }
+  if (!specificOvertime.date) {
+    console.error("날짜가 유효하지 않습니다.");
+    return;
+  }
 
-const fetchAddOvertimeData = async () => {
   try {
     const db = useNuxtApp().$firestoreDb;
     if (!db) {
       throw new Error("Firestore 인스턴스가 없습니다.");
     }
 
-    const overtimeCollection = collection(db, "overtimes");
-    const overtimeQuery = query(
-      overtimeCollection,
-      where("date", "==", overtimeData.date),
-      where("user", "==", overtimeData.user)
-    );
-
-    const querySnapshot = await getDocs(overtimeQuery);
-
-    if (!querySnapshot.empty) {
-      toast.add({
-        title: "중복 오류",
-        description: "이미 등록된 야근 데이터가 있습니다.",
-        color: "error",
-        duration: 2000,
-      });
-      return;
-    }
-
-    const dateObj = new Date(overtimeData.date);
+    const dateObj = new Date(specificOvertime.date);
     let year = dateObj.getFullYear();
     let month = dateObj.getMonth() + 1;
     const day = dateObj.getDate();
@@ -72,23 +63,23 @@ const fetchAddOvertimeData = async () => {
     const formattedMonth = month.toString().padStart(2, "0");
     const formattedYear = year.toString();
 
-    await addDoc(overtimeCollection, {
-      user: overtimeData.user,
-      date: overtimeData.date,
-      hours: overtimeData.hours ?? 0,
-      minutes: overtimeData.minutes ?? 0,
+    const overtimeDocRef = doc(db, "overtimes", dataID);
+
+    await updateDoc(overtimeDocRef, {
+      user: specificOvertime.user,
+      date: specificOvertime.date,
+      hours: specificOvertime.hours ?? 0,
+      minutes: specificOvertime.minutes ?? 0,
       year: formattedYear,
       month: formattedMonth,
-      memo: overtimeData.memo,
+      memo: specificOvertime.memo,
     });
-
     toast.add({
       title: "등록 완료",
-      description: "야근을 추가하였습니다.",
+      description: "야근을 수정하였습니다.",
       color: "success",
       duration: 1000,
     });
-
     router.back();
   } catch (error) {
     console.error("Firestore 오류:", error);
@@ -99,6 +90,17 @@ const fetchAddOvertimeData = async () => {
     });
   }
 };
+
+onMounted(async () => {
+  if (userID && dateQuery) {
+    await overtimesDataStore.fetchSpecificOvertime(userID, dateQuery);
+    specificOvertime.date = overtimesDataStore.specificOvertime?.date || "";
+    specificOvertime.hours = overtimesDataStore.specificOvertime?.hours || "";
+    specificOvertime.minutes =
+      overtimesDataStore.specificOvertime?.minutes || "";
+    specificOvertime.memo = overtimesDataStore.specificOvertime?.memo || "";
+  }
+});
 </script>
 
 <template>
@@ -109,9 +111,9 @@ const fetchAddOvertimeData = async () => {
   </div>
   <div v-else>
     <ClientOnly>
-      <div class="page_layout">
+      <div v-if="specificOvertime" class="page_layout">
         <div class="flex justify-between">
-          <h1 class="page_title">야근 추가</h1>
+          <h1 class="page_title">야근 수정</h1>
           <UButton
             type="button"
             color="neutral"
@@ -120,24 +122,27 @@ const fetchAddOvertimeData = async () => {
           />
         </div>
         <UForm
-          :state="overtimeData"
-          :validate="validate"
+          :state="specificOvertime"
           class="page_layout"
-          @submit="fetchAddOvertimeData"
+          @submit="fetchUpdateOvertimeData"
         >
           <UFormField label="날짜" name="date">
-            <UInput v-model="overtimeData.date" type="date" variant="subtle" />
+            <UInput
+              v-model="specificOvertime.date"
+              type="date"
+              variant="subtle"
+            />
           </UFormField>
           <UFormField label="시간" name="hours">
             <UInput
-              v-model="overtimeData.hours"
+              v-model="specificOvertime.hours"
               type="number"
               variant="subtle"
             />
           </UFormField>
           <UFormField label="분" name="minutes">
             <UInput
-              v-model="overtimeData.minutes"
+              v-model="specificOvertime.minutes"
               type="number"
               variant="subtle"
             />
@@ -145,16 +150,19 @@ const fetchAddOvertimeData = async () => {
           <UFormField label="메모" name="memo">
             <div class="flex items-center gap-1">
               <UInput
-                v-model="overtimeData.memo"
+                v-model="specificOvertime.memo"
                 :maxlength="maxLength"
                 class="grow"
                 variant="subtle"
               />
-              {{ overtimeData.memo?.length }}/{{ maxLength }}
+              {{ specificOvertime.memo?.length }}/{{ maxLength }}
             </div>
           </UFormField>
-          <UButton type="submit" label="야근 추가하기" class="w-fit" />
+          <UButton type="submit" label="야근 수정하기" class="w-fit" />
         </UForm>
+      </div>
+      <div v-else>
+        <p>해당하는 데이터가 없습니다.</p>
       </div>
     </ClientOnly>
   </div>

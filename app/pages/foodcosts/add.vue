@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormError } from "@nuxt/ui";
-import { addDoc, collection } from "firebase/firestore";
+import { query, where, getDocs, addDoc, collection } from "firebase/firestore";
 import { useFirebaseUser } from "~/composables/useFirebaseUser";
 
 const { loading } = useFirebaseUser();
@@ -37,6 +37,24 @@ const fetchAddFoodcostData = async () => {
       throw new Error("Firestore 인스턴스가 없습니다.");
     }
     const foodcostCollection = collection(db, "foodcosts");
+    const foodcostQuery = query(
+      foodcostCollection,
+      where("date", "==", foodcostData.date),
+      where("user", "==", foodcostData.user)
+    );
+
+    const querySnapshot = await getDocs(foodcostQuery);
+
+    if (!querySnapshot.empty) {
+      toast.add({
+        title: "중복 오류",
+        description: "이미 등록된 식비 데이터가 있습니다.",
+        color: "error",
+        duration: 2000,
+      });
+      return;
+    }
+
     await addDoc(foodcostCollection, {
       user: foodcostData.user,
       price: foodcostData.price,
@@ -49,11 +67,11 @@ const fetchAddFoodcostData = async () => {
       title: "등록 완료",
       description: "식비를 추가하였습니다.",
       color: "success",
-      duration: 2000,
+      duration: 1000,
     });
     setTimeout(() => {
       navigateTo("/foodcosts");
-    }, 2000);
+    }, 1000);
   } catch (error) {
     console.error("Firestore 오류:", error);
     toast.add({
@@ -90,18 +108,12 @@ const fetchAddFoodcostData = async () => {
           @submit="fetchAddFoodcostData"
         >
           <UFormField label="날짜" name="date">
-            <UInput
-              v-model="foodcostData.date"
-              type="date"
-              class="grow"
-              variant="subtle"
-            />
+            <UInput v-model="foodcostData.date" type="date" variant="subtle" />
           </UFormField>
           <UFormField label="금액" name="price">
             <UInput
               v-model="foodcostData.price"
               type="number"
-              class="grow"
               variant="subtle"
             />
           </UFormField>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { doc, deleteDoc } from "firebase/firestore";
 import type { TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel } from "@tanstack/vue-table";
 import { useFoodcostsDataStore } from "~/stores/foodcostsDataStore";
@@ -15,6 +16,10 @@ const { loading } = useFirebaseUser();
 const { user } = useFirebaseUser();
 const userID = user.value?.email || "";
 
+const router = useRouter();
+
+const toast = useToast();
+
 const foodcostsDataStore = useFoodcostsDataStore();
 
 const foodcostsTable = useTemplateRef("foodcostsTable");
@@ -27,12 +32,63 @@ const columns: TableColumn<FoodcostsData>[] = [
     cell: ({ row }) => commaFormat(row.getValue("price")),
   },
   { header: "메모", accessorKey: "memo" },
+  {
+    id: "action",
+  },
 ];
+
+const getDropdownActions = (id: string, date: string): DropdownMenuItem[][] => {
+  return [
+    [
+      {
+        label: "수정",
+        icon: "i-lucide-edit",
+        onSelect: () => {
+          router.replace(`/foodcosts/edit?id=${id}&date=${date}`);
+        },
+      },
+      {
+        label: "삭제",
+        icon: "i-lucide-trash",
+        color: "error",
+        onSelect: async () => {
+          await fetchDeleteFoodcostData(id);
+        },
+      },
+    ],
+  ];
+};
 
 const pagination = ref({
   pageIndex: 0,
   pageSize: 10,
 });
+
+const fetchDeleteFoodcostData = async (id: string) => {
+  try {
+    const db = useNuxtApp().$firestoreDb;
+    if (!db) {
+      throw new Error("Firestore 인스턴스가 없습니다.");
+    }
+    await deleteDoc(doc(db, "foodcosts", id));
+
+    toast.add({
+      title: "삭제 완료",
+      description: "식비를 삭제하였습니다.",
+      color: "success",
+      duration: 1000,
+    });
+
+    await foodcostsDataStore.fetchFoodcostsData(userID);
+  } catch (error) {
+    console.error("Firestore 오류:", error);
+    toast.add({
+      title: "Error",
+      description: "데이터 삭제 중 오류가 발생했습니다.",
+      color: "error",
+    });
+  }
+};
 
 onMounted(async () => {
   try {
@@ -54,16 +110,16 @@ onMounted(async () => {
     <ClientOnly>
       <div class="page_layout">
         <div class="flex justify-between">
-          <h1 class="page_title">식비 관리</h1>
-          <div class="flex-default">
-            <UButton label="등록하기" to="/foodcosts/add" class="w-fit" />
+          <div class="flex items-center gap-3">
             <UButton
               type="button"
               color="neutral"
               icon="i-lucide-house"
               to="/"
             />
+            <h1 class="page_title">식비 관리</h1>
           </div>
+          <UButton label="등록하기" to="/foodcosts/add" class="w-fit" />
         </div>
         <div>
           <p>이번 달 식비는?</p>
@@ -85,7 +141,25 @@ onMounted(async () => {
               getPaginationRowModel: getPaginationRowModel(),
             }"
             class="flex-1"
-          />
+          >
+            <template #action-cell="{ row }">
+              <UDropdownMenu
+                :items="
+                  getDropdownActions(
+                    row.original.id,
+                    row.original.date.replaceAll('-', '')
+                  )
+                "
+              >
+                <UButton
+                  icon="i-lucide-ellipsis-vertical"
+                  color="neutral"
+                  variant="ghost"
+                  aria-label="Actions"
+                />
+              </UDropdownMenu>
+            </template>
+          </UTable>
           <div class="flex justify-center border-t border-default pt-4">
             <UPagination
               :default-page="
