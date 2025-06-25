@@ -19,8 +19,8 @@ if (dateQuery) {
 const specificOvertime = reactive({
   user: userID,
   date: "",
-  hours: "",
-  minutes: "",
+  hours: 0,
+  minutes: 0,
   year: "",
   month: "",
   memo: "",
@@ -95,9 +95,9 @@ onMounted(async () => {
   if (userID && dateQuery) {
     await overtimesDataStore.fetchSpecificOvertime(userID, dateQuery);
     specificOvertime.date = overtimesDataStore.specificOvertime?.date || "";
-    specificOvertime.hours = overtimesDataStore.specificOvertime?.hours || "";
+    specificOvertime.hours = overtimesDataStore.specificOvertime?.hours || 0;
     specificOvertime.minutes =
-      overtimesDataStore.specificOvertime?.minutes || "";
+      overtimesDataStore.specificOvertime?.minutes || 0;
     specificOvertime.memo = overtimesDataStore.specificOvertime?.memo || "";
   }
 });

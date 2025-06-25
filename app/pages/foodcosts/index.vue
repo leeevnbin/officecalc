@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { doc, deleteDoc } from "firebase/firestore";
-import type { TableColumn } from "@nuxt/ui";
+import type { DropdownMenuItem, TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel } from "@tanstack/vue-table";
 import { useFoodcostsDataStore } from "~/stores/foodcostsDataStore";
 import { commaFormat } from "~/utils/formattingFns";
 
 interface FoodcostsData {
+  id: string;
   price: number;
   date: string;
   memo: string;
@@ -110,7 +111,7 @@ onMounted(async () => {
     <ClientOnly>
       <div class="page_layout">
         <div class="flex justify-between">
-          <div class="flex items-center gap-3">
+          <div class="flex-btn">
             <UButton
               type="button"
               color="neutral"

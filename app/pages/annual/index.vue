@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { doc, deleteDoc } from "firebase/firestore";
-import type { TableColumn } from "@nuxt/ui";
+import type { DropdownMenuItem, TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel } from "@tanstack/vue-table";
 import { useAnnualDataStore } from "~/stores/annualDataStore";
 import { useUserDataStore } from "~/stores/userDataStore";
 import { calculateAnnualLeave } from "~/utils/calculateDaysFns";
 
 interface AnnualData {
+  id: string;
   date: string;
   memo: string;
 }
@@ -104,7 +105,7 @@ onMounted(async () => {
     <ClientOnly>
       <div class="page_layout">
         <div class="flex justify-between">
-          <div class="flex items-center gap-3">
+          <div class="flex-btn">
             <UButton
               type="button"
               color="neutral"

@@ -135,7 +135,7 @@ const signup = () => {
                 min="0"
                 variant="subtle"
               />
-              <p>만 원</p>
+              <span>만 원</span>
             </div>
           </UFormField>
           <div class="flex gap-2">

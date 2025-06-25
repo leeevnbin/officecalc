@@ -18,7 +18,7 @@ if (dateQuery) {
 
 const specificFoodcost = reactive({
   user: userID,
-  price: "",
+  price: 0,
   date: "",
   memo: "",
   year: "",
@@ -77,7 +77,7 @@ onMounted(async () => {
   if (userID && dateQuery) {
     await foodcostsDataStore.fetchSpecificFoodcost(userID, dateQuery);
     specificFoodcost.date = foodcostsDataStore.specificFoodcost?.date || "";
-    specificFoodcost.price = foodcostsDataStore.specificFoodcost?.price || "";
+    specificFoodcost.price = foodcostsDataStore.specificFoodcost?.price || 0;
     specificFoodcost.memo = foodcostsDataStore.specificFoodcost?.memo || "";
   }
 });

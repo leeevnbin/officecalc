@@ -99,12 +99,20 @@ onMounted(async () => {
             <UIcon name="i-lucide-dog" class="size-7" />
             <p class="text-lg font-medium">{{ userInfo?.name }}</p>
           </div>
-          <UButton
-            label="로그아웃"
-            color="error"
-            variant="outline"
-            @click="logout"
-          />
+          <div class="flex-btn">
+            <UButton
+              label="로그아웃"
+              color="error"
+              variant="link"
+              @click="logout"
+            />
+            <UButton
+              icon="i-lucide-settings"
+              color="neutral"
+              variant="link"
+              to="/setting"
+            />
+          </div>
         </div>
         <div class="flex justify-between">
           <div class="flex-default">
@@ -187,9 +195,9 @@ onMounted(async () => {
                   {{
                     userInfo &&
                     commaFormat(
-                      (userInfo.salary / 209) *
+                      Math.round((userInfo.salary / 209) *
                         (calculateAnnualLeave(userInfo.startDate) -
-                          annualDataStore.sumDeduction())
+                          annualDataStore.sumDeduction()))
                     )
                   }}원
                 </p>
