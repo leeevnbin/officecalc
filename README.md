@@ -11,9 +11,9 @@
 
 ## 🛠️ 기술 스택
 
-<img src="https://skillicons.dev/icons?i=nuxt,typescript,firebase,tailwind,netlify"/>
+<img src="https://skillicons.dev/icons?i=nuxt,typescript,pinia,firebase,tailwind,netlify"/>
 
-### Nuxt.js, TypeScript, Firebase, Tailwind, Netlify
+### Nuxt.js, TypeScript, Pinia, Firebase, Tailwind, Netlify
 
 ## ⭐ 주요 기능
 

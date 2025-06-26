@@ -44,7 +44,6 @@ export const useFoodcostsDataStore = defineStore("foodcostsData", () => {
           })
           .sort((a, b) => a.date.localeCompare(b.date));
       } else {
-        console.warn("데이터를 찾을 수 없습니다.");
         foodcostsData.value = [];
       }
     } catch (error) {
