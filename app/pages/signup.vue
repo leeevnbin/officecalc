@@ -40,7 +40,7 @@ const fetchUser = async () => {
     }
     const userCollection = collection(db, "users");
     await addDoc(userCollection, {
-      user: userInfo.id + "@officecalc.kro.kr",
+      user: userInfo.id + "@officecalc.leb",
       name: userInfo.name,
       salary: userInfo.salary ? userInfo.salary * 10000 : 0,
       startDate: userInfo.startDate,
@@ -64,7 +64,7 @@ const join = async () => {
   try {
     await createUserWithEmailAndPassword(
       auth,
-      userInfo.id + "@officecalc.kro.kr",
+      userInfo.id + "@officecalc.leb",
       userInfo.password
     );
     await nextTick();

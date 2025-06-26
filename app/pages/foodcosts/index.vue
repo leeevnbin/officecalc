@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { doc, deleteDoc } from "firebase/firestore";
 import type { DropdownMenuItem, TableColumn } from "@nuxt/ui";
-import { getPaginationRowModel } from "@tanstack/vue-table";
+import { getPaginationRowModel, type Row } from "@tanstack/vue-table";
 import { useFoodcostsDataStore } from "~/stores/foodcostsDataStore";
 import { commaFormat } from "~/utils/formattingFns";
 
@@ -26,7 +26,14 @@ const foodcostsDataStore = useFoodcostsDataStore();
 const foodcostsTable = useTemplateRef("foodcostsTable");
 
 const columns: TableColumn<FoodcostsData>[] = [
-  { header: "날짜", accessorKey: "date" },
+  {
+    header: "날짜",
+    cell: ({ row }: { row: Row<FoodcostsData> }) => {
+      return `${row.original.date.split("-")[1]}/${
+        row.original.date.split("-")[2]
+      }`;
+    },
+  },
   {
     header: "금액",
     accessorKey: "price",

@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   app: {
     head: {
-      title: "오피스계산기",
+      title: "오피스 계산기",
     },
     buildAssetsDir: "officecalc/",
     rootId: "officecalc",

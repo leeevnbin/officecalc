@@ -18,15 +18,16 @@
 }
 
 #officecalc {
-  @apply w-screen lg:max-w-3xl min-h-screen;
-  @apply mx-auto;
+  @apply w-screen md:w-3xl min-h-screen;
   @apply flex;
+  @apply mx-auto;
+  @apply bg-[url(/default.jpg)] bg-center bg-cover;
 }
 
 #calc {
+  @apply w-screen;
   @apply flex flex-col grow;
-  @apply p-5;
-  @apply bg-[url(/default.jpg)] bg-center;
+  @apply p-4;
 }
 
 #copyright {

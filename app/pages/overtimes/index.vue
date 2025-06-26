@@ -13,7 +13,6 @@ interface OvertimesData {
   date: string;
   hours: number;
   minutes: number;
-  memo: string;
 }
 
 const { loading } = useFirebaseUser();
@@ -41,7 +40,14 @@ const overtimesDataStore = useOvertimesDataStore();
 const overtimesTable = useTemplateRef("overtimesTable");
 
 const columns: TableColumn<OvertimesData>[] = [
-  { header: "날짜", accessorKey: "date" },
+  {
+    header: "날짜",
+    cell: ({ row }: { row: Row<OvertimesData> }) => {
+      return `${row.original.date.split("-")[1]}/${
+        row.original.date.split("-")[2]
+      }`;
+    },
+  },
   {
     header: "시간",
     cell: ({ row }: { row: Row<OvertimesData> }) => {
@@ -65,7 +71,6 @@ const columns: TableColumn<OvertimesData>[] = [
       return `${allowance}원`;
     },
   },
-  { header: "메모", accessorKey: "memo" },
   {
     id: "action",
   },
