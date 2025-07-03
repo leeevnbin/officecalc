@@ -13,6 +13,7 @@ interface OvertimesData {
   date: string;
   hours: number;
   minutes: number;
+  seconds: number;
 }
 
 const { loading } = useFirebaseUser();
@@ -53,8 +54,9 @@ const columns: TableColumn<OvertimesData>[] = [
     cell: ({ row }: { row: Row<OvertimesData> }) => {
       const hours = row.original.hours ?? 0;
       const minutes = row.original.minutes ?? 0;
+      const seconds = row.original.seconds ?? 0;
 
-      return `${hours}시간 ${minutes}분`;
+      return `${hours}시간 ${minutes}분 ${seconds}초`;
     },
   },
   {
@@ -62,7 +64,8 @@ const columns: TableColumn<OvertimesData>[] = [
     cell: ({ row }: { row: Row<OvertimesData> }) => {
       const hours = row.original.hours ? row.original.hours * 60 : 0;
       const minutes = row.original.minutes ?? 0;
-      const times = hours + minutes;
+      const seconds = row.original.seconds ? row.original.seconds / 60 : 0;
+      const times = hours + minutes + seconds;
       const salary = userDataStore.userInfo ? userDataStore.userInfo.salary : 0;
       const allowance = commaFormat(
         Math.round((salary / (209 * 12)) * 1.5 * (times / 60))
@@ -106,7 +109,7 @@ const pagination = ref({
 const totalAllowance = (selectedMonth: string) => {
   const salary = userDataStore.userInfo ? userDataStore.userInfo.salary : 0;
   const totalTimes = overtimesDataStore.totalTimes(selectedMonth);
-  const total = Math.round((salary / (209 * 12)) * 1.5 * (totalTimes / 60));
+  const total = Math.round((salary / (209 * 12)) * 1.5 * (totalTimes / 3600));
 
   return commaFormat(total);
 };

@@ -13,6 +13,7 @@ const overtimeData = reactive({
   date: "",
   hours: null,
   minutes: null,
+  seconds: null,
   year: null,
   month: null,
   memo: "",
@@ -77,6 +78,7 @@ const fetchAddOvertimeData = async () => {
       date: overtimeData.date,
       hours: overtimeData.hours ?? 0,
       minutes: overtimeData.minutes ?? 0,
+      seconds: overtimeData.seconds ?? 0,
       year: formattedYear,
       month: formattedMonth,
       memo: overtimeData.memo,
@@ -138,6 +140,13 @@ const fetchAddOvertimeData = async () => {
           <UFormField label="분" name="minutes">
             <UInput
               v-model="overtimeData.minutes"
+              type="number"
+              variant="subtle"
+            />
+          </UFormField>
+          <UFormField label="초" name="seconds">
+            <UInput
+              v-model="overtimeData.seconds"
               type="number"
               variant="subtle"
             />

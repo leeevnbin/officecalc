@@ -21,6 +21,7 @@ const specificOvertime = reactive({
   date: "",
   hours: 0,
   minutes: 0,
+  seconds: 0,
   year: "",
   month: "",
   memo: "",
@@ -70,6 +71,7 @@ const fetchUpdateOvertimeData = async () => {
       date: specificOvertime.date,
       hours: specificOvertime.hours ?? 0,
       minutes: specificOvertime.minutes ?? 0,
+      seconds: specificOvertime.seconds ?? 0,
       year: formattedYear,
       month: formattedMonth,
       memo: specificOvertime.memo,
@@ -98,6 +100,8 @@ onMounted(async () => {
     specificOvertime.hours = overtimesDataStore.specificOvertime?.hours || 0;
     specificOvertime.minutes =
       overtimesDataStore.specificOvertime?.minutes || 0;
+    specificOvertime.seconds =
+      overtimesDataStore.specificOvertime?.seconds || 0;
     specificOvertime.memo = overtimesDataStore.specificOvertime?.memo || "";
   }
 });
@@ -143,6 +147,13 @@ onMounted(async () => {
           <UFormField label="분" name="minutes">
             <UInput
               v-model="specificOvertime.minutes"
+              type="number"
+              variant="subtle"
+            />
+          </UFormField>
+          <UFormField label="초" name="seconds">
+            <UInput
+              v-model="specificOvertime.seconds"
               type="number"
               variant="subtle"
             />

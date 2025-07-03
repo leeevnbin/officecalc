@@ -159,7 +159,7 @@ onMounted(async () => {
                       Math.round(
                         (userInfo.salary / (209 * 12)) *
                           1.5 *
-                          (overtimesDataStore.totalTimes(period.month) / 60)
+                          (overtimesDataStore.totalTimes(period.month) / 3600)
                       )
                     )
                   }}원
@@ -195,9 +195,11 @@ onMounted(async () => {
                   {{
                     userInfo &&
                     commaFormat(
-                      Math.round((userInfo.salary / 209) *
-                        (calculateAnnualLeave(userInfo.startDate) -
-                          annualDataStore.sumDeduction()))
+                      Math.round(
+                        (userInfo.salary / 209) *
+                          (calculateAnnualLeave(userInfo.startDate) -
+                            annualDataStore.sumDeduction())
+                      )
                     )
                   }}원
                 </p>

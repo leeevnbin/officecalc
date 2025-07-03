@@ -7,6 +7,7 @@ interface OvertimesData {
   date: string;
   hours: number;
   minutes: number;
+  seconds: number;
   memo: string;
 }
 
@@ -38,6 +39,7 @@ export const useOvertimesDataStore = defineStore("overtimesData", () => {
               date: data.date || "",
               hours: data.hours || 0,
               minutes: data.minutes || 0,
+              seconds: data.seconds || 0,
               memo: data.memo || "",
             };
           })
@@ -83,16 +85,18 @@ export const useOvertimesDataStore = defineStore("overtimesData", () => {
   const totalTimes = (month: string): number => {
     const data = overtimesByMonth.value[month] || [];
     return data.reduce(
-      (total, item) => total + item.hours * 60 + item.minutes,
+      (total, item) =>
+        total + item.hours * 3600 + item.minutes * 60 + item.seconds,
       0
     );
   };
 
   const formattingOvertimes = (month: string): string => {
     const total = totalTimes(month);
-    const hours = Math.floor(total / 60);
-    const minutes = total % 60;
-    return `${hours}시간 ${minutes}분`;
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    return `${hours}시간 ${minutes}분 ${seconds}초`;
   };
 
   return {
