@@ -27,7 +27,6 @@ const userID = user.value?.email || "";
 const userInfo = ref<UserInfo | null>(null);
 
 const today = new Date();
-const twoMonthsAgo = (today.getMonth() - 1).toString().padStart(2, "0");
 const lastMonth = today.getMonth().toString().padStart(2, "0");
 const thisMonth = (today.getMonth() + 1).toString().padStart(2, "0");
 const nextMonth = (today.getMonth() + 2).toString().padStart(2, "0");
@@ -48,9 +47,13 @@ const fetchUserData = async () => {
   }
 };
 
-const getOvertimePeriod = (month: string, previousMonth: string) => ({
+const getOvertimePeriod = (month: string) => ({
   month,
-  period: `${previousMonth}월 26일 ~ ${month}월 25일`,
+  period: `${month}월 1일 ~ ${month}월 ${new Date(
+    today.getFullYear(),
+    Number(month),
+    0
+  ).getDate()}일`,
 });
 
 const foodsPeriod = () => {
@@ -128,9 +131,9 @@ onMounted(async () => {
         <div class="flex-default flex-wrap">
           <ULink
             v-for="(period, index) in [
-              { month: lastMonth, prevMonth: twoMonthsAgo },
-              { month: thisMonth, prevMonth: lastMonth },
-              { month: nextMonth, prevMonth: thisMonth },
+              { month: lastMonth },
+              { month: thisMonth },
+              { month: nextMonth },
             ]"
             :key="index"
             :to="{
@@ -145,7 +148,7 @@ onMounted(async () => {
               <div class="flex justify-between">
                 <h2>{{ period.month }}월 야근</h2>
                 <p class="text-sm">
-                  {{ getOvertimePeriod(period.month, period.prevMonth).period }}
+                  {{ getOvertimePeriod(period.month).period }}
                 </p>
               </div>
               <div class="flex justify-between">

@@ -38,8 +38,6 @@ export const calculateAnnualLeave = (
 
   const countNewYears = countNewYearsBetween(startDate, referenceDate);
 
-  console.log(countNewYears);
-
   if (startYear === referenceYear) {
     return Math.floor(daysSinceStart / 30);
   } else {

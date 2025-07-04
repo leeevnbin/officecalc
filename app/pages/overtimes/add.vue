@@ -58,17 +58,8 @@ const fetchAddOvertimeData = async () => {
     }
 
     const dateObj = new Date(overtimeData.date);
-    let year = dateObj.getFullYear();
-    let month = dateObj.getMonth() + 1;
-    const day = dateObj.getDate();
-
-    if (day > 25) {
-      month += 1;
-      if (month > 12) {
-        month = 1;
-        year += 1;
-      }
-    }
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
 
     const formattedMonth = month.toString().padStart(2, "0");
     const formattedYear = year.toString();
