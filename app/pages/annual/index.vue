@@ -29,7 +29,7 @@ const columns: TableColumn<AnnualData>[] = [
   {
     header: "날짜",
     cell: ({ row }: { row: Row<AnnualData> }) => {
-      return `${row.original.date.split("-")[1]}/${
+      return `${row.original.date.split("-")[0]}/${row.original.date.split("-")[1]}/${
         row.original.date.split("-")[2]
       }`;
     },

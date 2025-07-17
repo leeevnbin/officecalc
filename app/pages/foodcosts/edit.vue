@@ -131,7 +131,7 @@ onMounted(async () => {
               {{ specificFoodcost.memo?.length }}/{{ maxLength }}
             </div>
           </UFormField>
-          <UButton type="submit" label="야근 수정하기" class="w-fit" />
+          <UButton type="submit" label="식비 수정하기" class="w-fit" />
         </UForm>
       </div>
       <div v-else>
